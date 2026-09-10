@@ -88,6 +88,8 @@ export const api = {
     id: string,
     patch: { favorite?: boolean; status?: "active" | "archived" },
   ) => rpc<Question>("question_patch", { p_id: id, p_patch: patch }),
+  deleteQuestions: (ids: string[]) =>
+    rpc<{ deleted: number }>("question_delete_many", { p_ids: ids }),
   policies: () => rpc<Policy[]>("policy_list"),
   savePolicy: (data: Omit<Policy, "id"> & { id?: string }) =>
     rpc<Policy>("policy_save", { p_data: data }),

@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { Study } from "../src/pages/Study";
 import { ImportPage } from "../src/pages/ImportPage";
+import { QuestionsPage } from "../src/pages/Questions";
 import { api } from "../src/lib/api";
 import { questionDraft } from "../src/domain/editor";
 import { validateQuestion } from "../src/domain/import";
@@ -24,6 +25,7 @@ vi.mock("../src/lib/api", () => ({
     duplicates: vi.fn(),
     importQuestions: vi.fn(),
     question: vi.fn(),
+    deleteQuestions: vi.fn(),
   },
 }));
 vi.mock("../src/components/RichEditor", () => ({
@@ -110,6 +112,7 @@ beforeEach(() => {
   });
   vi.mocked(api.imports).mockResolvedValue([]);
   vi.mocked(api.duplicates).mockResolvedValue([]);
+  vi.mocked(api.deleteQuestions).mockResolvedValue({ deleted: 1 });
 });
 afterEach(cleanup);
 const study = () =>
@@ -188,6 +191,33 @@ describe("study interaction integrity", () => {
     await screen.findByText("Sessão concluída");
     expect(api.questions).toHaveBeenCalledTimes(1);
   });
+});
+
+it("deletes only the checked questions after an explicit confirmation", async () => {
+  render(
+    <QuestionsPage
+      catalogs={[]}
+      onEdit={() => {}}
+      onStudy={() => {}}
+      onImport={() => {}}
+      refresh={0}
+    />,
+  );
+  fireEvent.click(
+    await screen.findByRole("checkbox", { name: /Selecionar questão/ }),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Excluir 1 questão" }),
+  );
+  expect(
+    screen.getByRole("dialog", { name: "Excluir 1 questão?" }),
+  ).toBeTruthy();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Excluir permanentemente" }),
+  );
+  await waitFor(() =>
+    expect(api.deleteQuestions).toHaveBeenCalledWith([q.id]),
+  );
 });
 
 it("removes database metadata before editing a saved question", () => {

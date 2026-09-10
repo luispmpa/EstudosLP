@@ -56,8 +56,10 @@ async function rpc<T = unknown>(
   const pairs = Object.entries(args);
   const result = await db.query<{ result: T }>(
     `select public.${name}(${pairs.map(([key], i) => `${key} => $${i + 1}`).join(",")}) as result`,
-    pairs.map(([, value]) =>
-      typeof value === "object" && value !== null
+    pairs.map(([key, value]) =>
+      key === "p_ids" && Array.isArray(value)
+        ? `{${value.map((item) => `"${String(item).replaceAll('"', '\\"')}"`).join(",")}}`
+        : typeof value === "object" && value !== null
         ? JSON.stringify(value)
         : value,
     ),
@@ -108,6 +110,8 @@ const schedule = (a: Attempt, p: Policy, request = randomUUID()) =>
   });
 const questions = (filters = {}) =>
   rpc<Page<Question>>("question_list", { p_filters: filters });
+const deleteQuestions = (ids: string[]) =>
+  rpc<{ deleted: number }>("question_delete_many", { p_ids: ids });
 
 beforeAll(async () => {
   db = new PGlite({ extensions: { pg_trgm } });
@@ -166,6 +170,7 @@ describe("real PostgreSQL ownership and integrity", () => {
     await expect(
       rpc("question_patch", { p_id: q.id, p_patch: { favorite: true } }),
     ).rejects.toThrow();
+    await expect(deleteQuestions([q.id])).rejects.toThrow();
     await expect(catalog("notebook", "Invasão", project.id)).rejects.toThrow();
     await expect(
       save(fixture({ catalog_ids: [project.id] })),
@@ -187,6 +192,28 @@ describe("real PostgreSQL ownership and integrity", () => {
     await expect(db.query("delete from public.review_events")).rejects.toThrow(
       /permission denied/i,
     );
+  });
+  it("permanently removes selected owned questions while retaining immutable records", async () => {
+    const first = await save();
+    const second = await save(fixture({ external_id: "124" }));
+    const interval = await policy("question", first.id);
+    const attempt = await answer(first);
+    await schedule(attempt, interval);
+
+    await expect(deleteQuestions([first.id, first.id])).rejects.toThrow(/repetidas/);
+    expect(await deleteQuestions([first.id, second.id])).toEqual({ deleted: 2 });
+    expect((await questions()).total).toBe(0);
+    expect(await rpc<Question | null>("question_get", { p_id: first.id })).toBeNull();
+
+    const history = await rpc<Page<Attempt>>("history_list");
+    expect(history.total).toBe(1);
+    expect(history.items[0].question_id).toBeNull();
+    expect(history.items[0].statement_snapshot).toBe(first.statement);
+    const events = await db.query<{ question_id: string | null }>(
+      "select question_id from public.review_events",
+    );
+    expect(events.rows).toEqual([{ question_id: null }]);
+    await expect(deleteQuestions([first.id])).rejects.toThrow(/encontradas/);
   });
   it("checks hierarchy roles and supports many notebooks without copying questions", async () => {
     const p = await catalog("project", "TRT4");
@@ -462,6 +489,16 @@ describe("transactional import and export", () => {
     const retry = await commit([fixture({ external_id: null })], hash);
     expect(retry.report.id).toBe(first.report.id);
     expect((await questions()).total).toBe(1);
+  });
+  it("keeps import audit rows after a referenced question is deleted", async () => {
+    const result = await commit([fixture()]);
+    const questionId = result.items[0].question_id;
+    expect(questionId).toBeTruthy();
+    await deleteQuestions([questionId!]);
+    const item = await db.query<{ question_id: string | null }>(
+      "select question_id from public.import_items",
+    );
+    expect(item.rows).toEqual([{ question_id: null }]);
   });
   it("supports skip/update/cancel duplicate policies and preserves old attempts", async () => {
     const q = await save();

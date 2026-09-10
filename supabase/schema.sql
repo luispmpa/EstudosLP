@@ -89,7 +89,7 @@ create table public.review_policy_intervals (
 create index review_intervals_policy on public.review_policy_intervals(user_id,policy_id,position);
 
 create table public.attempts (
-  user_id uuid not null, id uuid not null default gen_random_uuid(), question_id uuid not null,
+  user_id uuid not null, id uuid not null default gen_random_uuid(), question_id uuid,
   request_id uuid not null, answered_at timestamptz not null default clock_timestamp(),
   answer text not null, correct_answer text not null, is_correct boolean not null,
   elapsed_ms integer not null check (elapsed_ms between 0 and 86400000),
@@ -101,7 +101,7 @@ create table public.attempts (
   was_review boolean not null default false,
   schedule_version integer not null,
   primary key(user_id,id), unique(user_id,request_id),
-  foreign key(user_id,question_id) references public.questions(user_id,id) on delete restrict,
+  foreign key(user_id,question_id) references public.questions(user_id,id) on delete set null (question_id),
   foreign key(user_id,project_id) references public.catalogs(user_id,id) on delete restrict,
   foreign key(user_id,notebook_id) references public.catalogs(user_id,id) on delete restrict
 );
@@ -131,7 +131,7 @@ create table public.review_schedules (
 );
 create index review_schedules_due on public.review_schedules(user_id,next_review_at,question_id) where status='active';
 create table public.review_events (
-  user_id uuid not null, id uuid not null default gen_random_uuid(), question_id uuid not null,
+  user_id uuid not null, id uuid not null default gen_random_uuid(), question_id uuid,
   attempt_id uuid, request_id uuid not null,
   action text not null check (action in ('schedule','reschedule','suspend','activate','remove')),
   created_at timestamptz not null default clock_timestamp(),
@@ -139,7 +139,7 @@ create table public.review_events (
   previous_next_review_at timestamptz, previous_status text,
   schedule_version integer not null,
   primary key(user_id,id), unique(user_id,request_id),
-  foreign key(user_id,question_id) references public.questions(user_id,id) on delete restrict,
+  foreign key(user_id,question_id) references public.questions(user_id,id) on delete set null (question_id),
   foreign key(user_id,attempt_id) references public.attempts(user_id,id) on delete restrict
 );
 create unique index review_events_one_selection on public.review_events(user_id,attempt_id) where action='schedule';
@@ -160,7 +160,7 @@ create table public.import_items (
   question_id uuid, error text,
   primary key(user_id,import_id,index),
   foreign key(user_id,import_id) references public.imports(user_id,id) on delete cascade,
-  foreign key(user_id,question_id) references public.questions(user_id,id) on delete restrict
+  foreign key(user_id,question_id) references public.questions(user_id,id) on delete set null (question_id)
 );
 
 -- Browser clients can read only their own rows. Mutations are guarded RPCs; histories cannot be edited.
@@ -350,6 +350,20 @@ declare u uuid:=private.require_user(); begin
  if not found then raise exception 'Questão não encontrada'; end if; return private.question_json(p_id);
 end $$;
 create function public.question_patch(p_id uuid,p_patch jsonb) returns jsonb language sql security invoker set search_path='' as $$select private.question_patch(p_id,p_patch)$$;
+create function private.question_delete_many(p_ids uuid[]) returns jsonb language plpgsql security definer set search_path='' as $$
+declare u uuid:=private.require_user(); ids uuid[]; owned_count integer; deleted_count integer;
+begin
+ if coalesce(cardinality(p_ids),0) not between 1 and 100 then raise exception 'Selecione de 1 a 100 questões'; end if;
+ select array_agg(input.id order by input.id) into ids from (select distinct id from unnest(p_ids) as value(id)) input;
+ if cardinality(ids)<>cardinality(p_ids) then raise exception 'A seleção contém questões repetidas'; end if;
+ perform pg_advisory_xact_lock(hashtextextended('question-delete:'||u::text,0));
+ select count(*) into owned_count from public.questions where user_id=u and id=any(ids);
+ if owned_count<>cardinality(ids) then raise exception 'Uma ou mais questões não foram encontradas'; end if;
+ delete from public.questions where user_id=u and id=any(ids);
+ get diagnostics deleted_count=row_count;
+ return jsonb_build_object('deleted',deleted_count);
+end $$;
+create function public.question_delete_many(p_ids uuid[]) returns jsonb language sql security invoker set search_path='' as $$select private.question_delete_many(p_ids)$$;
 
 -- Filter once in SQL, paginate before assembling rich content. All classifications are ANDed.
 create function private.filtered_questions(p_filters jsonb) returns setof public.questions language sql stable security invoker set search_path='' as $$
@@ -650,7 +664,7 @@ end $$;
 -- Private functions are not in exposed PostgREST schemas. They recheck identity even when called directly.
 do $$ declare f record; begin
  for f in select p.oid::regprocedure signature,n.nspname schema_name from pg_proc p join pg_namespace n on n.oid=p.pronamespace
- where n.nspname='private' or (n.nspname='public' and p.proname=any(array['catalog_list','catalog_save','catalog_archive','catalog_delete','question_list','question_get','question_save','question_patch','policy_list','policy_save','policy_delete','policy_resolve','answer_question','schedule_attempt','review_manage','history_list','dashboard','import_duplicates','import_commit','import_list','export_page'])) loop
+ where n.nspname='private' or (n.nspname='public' and p.proname=any(array['catalog_list','catalog_save','catalog_archive','catalog_delete','question_list','question_get','question_save','question_patch','question_delete_many','policy_list','policy_save','policy_delete','policy_resolve','answer_question','schedule_attempt','review_manage','history_list','dashboard','import_duplicates','import_commit','import_list','export_page'])) loop
   execute format('revoke all on function %s from public, anon',f.signature);
   execute format('grant execute on function %s to authenticated',f.signature);
  end loop;

@@ -175,24 +175,32 @@ export function HistoryPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {history.data.items.map((a) => (
+                  {history.data.items.map((a) => {
+                    const questionAvailable = Boolean(a.question_id);
+                    const openQuestion = async () => {
+                      if (!a.question_id) return;
+                      try {
+                        onQuestion(await api.question(a.question_id));
+                      } catch (e) {
+                        setError(errorText(e));
+                      }
+                    };
+                    return (
                     <tr key={a.id}>
                       <td className="nowrap">{dateTime(a.answered_at)}</td>
                       <td>
                         <button
                           className="history-question"
-                          onClick={async () => {
-                            try {
-                              onQuestion(await api.question(a.question_id));
-                            } catch (e) {
-                              setError(errorText(e));
-                            }
-                          }}
+                          disabled={!questionAvailable}
+                          title={questionAvailable ? undefined : "Questão excluída"}
+                          onClick={openQuestion}
                         >
                           {plainText(a.statement_snapshot)}
                         </button>
                         <span className="small muted">
-                          #{a.question_id.slice(0, 8)}
+                          {a.question_id
+                            ? `#${a.question_id.slice(0, 8)}`
+                            : "Questão excluída"}
                         </span>
                       </td>
                       {columns.includes("context") && (
@@ -240,20 +248,16 @@ export function HistoryPage({
                       <td>
                         <button
                           className="icon-button"
-                          aria-label="Abrir questão"
-                          onClick={async () => {
-                            try {
-                              onQuestion(await api.question(a.question_id));
-                            } catch (e) {
-                              setError(errorText(e));
-                            }
-                          }}
+                          aria-label={questionAvailable ? "Abrir questão" : "Questão excluída"}
+                          disabled={!questionAvailable}
+                          onClick={openQuestion}
                         >
                           <ChevronRight size={17} />
                         </button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

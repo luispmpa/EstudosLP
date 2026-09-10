@@ -1,5 +1,13 @@
-import { useState } from "react";
-import { ArrowRight, Pencil, Plus, Star, Upload, Archive } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  Pencil,
+  Plus,
+  Star,
+  Upload,
+  Archive,
+  Trash2,
+} from "lucide-react";
 import { api } from "../lib/api";
 import type { Catalog, Filters, Question } from "../domain/types";
 import { FiltersBar } from "../components/FiltersBar";
@@ -7,6 +15,7 @@ import {
   Empty,
   ErrorBox,
   Loading,
+  Modal,
   PageTitle,
   Pagination,
   dateTime,
@@ -36,6 +45,9 @@ export function QuestionsPage({
     sort: "newest",
   });
   const [error, setError] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const questions = useLoad(
     () => api.questions(filters),
     [JSON.stringify(filters), refresh],
@@ -44,6 +56,41 @@ export function QuestionsPage({
     initialMode ?? "",
   );
   const reviews = initialMode === "due";
+  const items = questions.data?.items ?? [];
+  const selectedCount = selectedIds.length;
+  const allVisibleSelected =
+    items.length > 0 && items.every((question) => selectedIds.includes(question.id));
+  useEffect(() => {
+    setSelectedIds([]);
+    setConfirmDelete(false);
+  }, [JSON.stringify(filters), refresh]);
+  const toggleQuestion = (id: string) =>
+    setSelectedIds((current) =>
+      current.includes(id)
+        ? current.filter((selected) => selected !== id)
+        : [...current, id],
+    );
+  const toggleVisible = () =>
+    setSelectedIds(allVisibleSelected ? [] : items.map((question) => question.id));
+  const deleteSelected = async () => {
+    if (!selectedIds.length) return;
+    setDeleting(true);
+    setError("");
+    try {
+      const result = await api.deleteQuestions(selectedIds);
+      const page = filters.page ?? 1;
+      const remaining = Math.max(0, (questions.data?.total ?? 0) - result.deleted);
+      setSelectedIds([]);
+      setConfirmDelete(false);
+      if (page > 1 && (page - 1) * (filters.page_size ?? 20) >= remaining)
+        setFilters({ ...filters, page: page - 1 });
+      else questions.reload();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setDeleting(false);
+    }
+  };
   const title = errors
     ? "Cada erro, uma oportunidade."
     : reviews
@@ -82,12 +129,34 @@ export function QuestionsPage({
       />
       <FiltersBar filters={filters} onChange={setFilters} catalogs={catalogs} />
       <div className="results-toolbar">
-        <span>
-          <strong>
-            {questions.data?.total.toLocaleString("pt-BR") ?? "—"}
-          </strong>{" "}
-          questões encontradas
-        </span>
+        <div className="results-summary">
+          <span>
+            <strong>
+              {questions.data?.total.toLocaleString("pt-BR") ?? "—"}
+            </strong>{" "}
+            questões encontradas
+          </span>
+          {!!items.length && (
+            <label className="check-label select-visible">
+              <input
+                type="checkbox"
+                aria-label="Selecionar todas as questões desta página"
+                checked={allVisibleSelected}
+                onChange={toggleVisible}
+              />
+              Selecionar página
+            </label>
+          )}
+          {selectedCount > 0 && (
+            <button
+              className="button danger bulk-delete"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 size={16} />
+              Excluir {selectedCount} {selectedCount === 1 ? "questão" : "questões"}
+            </button>
+          )}
+        </div>
         <div>
           <select
             aria-label="Ordenar questões"
@@ -132,23 +201,36 @@ export function QuestionsPage({
         </section>
       ) : (
         <div className="question-list">
-          {questions.data.items.map((q) => {
+          {items.map((q) => {
             const classifications = catalogs.filter((c) =>
               q.catalog_ids?.includes(c.id),
             );
             return (
-              <article className="panel question-list-item" key={q.id}>
+              <article
+                className={`panel question-list-item ${selectedIds.includes(q.id) ? "selected" : ""}`}
+                key={q.id}
+              >
                 <div className="question-list-meta">
-                  <span className="eyebrow">
-                    {[
-                      classifications.find((c) => c.kind === "board")?.name ??
-                        q.board,
-                      q.year,
-                      q.source,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </span>
+                  <div className="question-list-meta-start">
+                    <label className="question-select">
+                      <input
+                        type="checkbox"
+                        aria-label={`Selecionar questão #${q.external_id || q.id.slice(0, 8)}`}
+                        checked={selectedIds.includes(q.id)}
+                        onChange={() => toggleQuestion(q.id)}
+                      />
+                    </label>
+                    <span className="eyebrow">
+                      {[
+                        classifications.find((c) => c.kind === "board")?.name ??
+                          q.board,
+                        q.year,
+                        q.source,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </div>
                   <span className="question-list-id">
                     #{q.external_id || q.id.slice(0, 8)}
                   </span>
@@ -257,6 +339,38 @@ export function QuestionsPage({
             onChange={(page) => setFilters({ ...filters, page })}
           />
         </div>
+      )}
+      {confirmDelete && (
+        <Modal
+          title={`Excluir ${selectedCount} ${selectedCount === 1 ? "questão" : "questões"}?`}
+          onClose={() => {
+            if (!deleting) setConfirmDelete(false);
+          }}
+        >
+          <div className="modal-content delete-confirmation">
+            <p>
+              A exclusão é permanente. As respostas registradas continuam no seu
+              histórico, mas ficam desvinculadas das questões removidas.
+            </p>
+            <div className="form-footer">
+              <button
+                className="button secondary"
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="button danger"
+                disabled={deleting}
+                onClick={deleteSelected}
+              >
+                <Trash2 size={16} />
+                {deleting ? "Excluindo…" : "Excluir permanentemente"}
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );
