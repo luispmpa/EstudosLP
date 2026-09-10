@@ -76,6 +76,8 @@ Os botões de revisão são registros editáveis. Uma escolha de 10 dias corresp
 
 ## Publicação
 
+Versão inicial publicada com acesso privado: [abrir EstudosLP](https://estudoslp.luispaulo93.chatgpt.site). Consulte [validação e configuração do Auth](docs/validation.md) antes de concluir o aceite de uso diário.
+
 O frontend gera arquivos estáticos em `dist/`:
 
 ```sh

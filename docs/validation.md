@@ -21,12 +21,12 @@ Os testes de banco aplicam os mesmos arquivos de migration em PostgreSQL via PGl
 
 ## Configuração de acesso hospedado
 
-Frontend privado previsto: `https://estudoslp.active-emu-2799.chatgpt.site`. A existência deste endereço na documentação não comprova publicação; consulte o resultado da entrega.
+Frontend publicado com acesso privado: `https://estudoslp.luispaulo93.chatgpt.site`. Publicação confirmada em 10/09/2026; acesso HTTP sem autenticação retorna 401.
 
 No [painel de URLs do Supabase](https://supabase.com/dashboard/project/ctkyjekfuzcicpzrugfi/auth/url-configuration), configure:
 
-- Site URL: `https://estudoslp.active-emu-2799.chatgpt.site`
-- Redirect URLs: `https://estudoslp.active-emu-2799.chatgpt.site/` e `https://estudoslp.active-emu-2799.chatgpt.site/?recovery=1`
+- Site URL: `https://estudoslp.luispaulo93.chatgpt.site`
+- Redirect URLs: `https://estudoslp.luispaulo93.chatgpt.site/` e `https://estudoslp.luispaulo93.chatgpt.site/?recovery=1`
 - Para desenvolvimento: `http://localhost:5173`, `http://localhost:5173/?recovery=1`, `http://127.0.0.1:5173` e `http://127.0.0.1:5173/?recovery=1`.
 
 Essa configuração do painel ainda não foi verificada. `supabase/config.toml` configura somente o ambiente local. A chave publicável está no ambiente local ignorado pelo Git; nenhum segredo administrativo pertence ao frontend ou ao repositório.
@@ -47,6 +47,6 @@ Essa configuração do painel ainda não foi verificada. `supabase/config.toml` 
 - A exportação JSON lê páginas e reúne o resultado na memória do navegador. Restaurar backup completo e importações assíncronas são etapas posteriores.
 - XLSX, HTML arbitrário de terceiros, desfazer importação, cópia de formatação e sincronização offline não foram implementados.
 - A ordenação de catálogos persiste itens sequencialmente; uma falha de rede pode exigir repetir a ação. Histórico e agenda usam transações no servidor.
-- Cabeçalhos em `public/_headers` exigem suporte do host; devem ser verificados no ambiente de publicação. CI é definido no GitHub, mas execução remota deve ser conferida no PR.
+- Cabeçalhos em `public/_headers` exigem suporte do host; devem ser verificados no ambiente de publicação. As execuções de CI do push e do PR #1 passaram em 10/09/2026.
 
 O incremento fornece o código e a base persistente do fluxo de estudo. Não declarar aceite final apenas a partir de testes locais ou da disponibilidade da página de login.
