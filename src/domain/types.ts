@@ -94,7 +94,7 @@ export interface Filters extends StudyContext {
 }
 export interface Attempt {
   id: string;
-  question_id: string;
+  question_id: string | null;
   answered_at: string;
   answer: string;
   correct_answer: string;
@@ -109,7 +109,7 @@ export interface Attempt {
 export interface ReviewEvent {
   id: string;
   schedule_version: number;
-  question_id: string;
+  question_id: string | null;
   attempt_id: string | null;
   created_at: string;
   action: string;
