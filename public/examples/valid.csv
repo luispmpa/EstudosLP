@@ -1,0 +1,4 @@
+external_id;source;type;statement;alternative_A;alternative_B;correct_answer;explanation_A;explanation_B;general_explanation;subject;year;tags
+CSV-001;Material demonstrativo EstudosLP;multiple_choice;"<p>Qual opção contém a expressão restos a pagar?</p>";Restos a pagar;Receita corrente;A;A expressão está nesta alternativa.;Esta alternativa contém outro conceito.;"<p>Exemplo de CSV com acentos; pontuação e HTML.</p>";AFO;2025;"demonstração;importação"
+CSV-002;Material demonstrativo EstudosLP;multiple_choice;"Primeira linha do enunciado.
+Segunda linha entre aspas.";Opção um;Opção dois;B;Incorreta.;Correta.;Explicação de exemplo.;Português;2025;demonstração

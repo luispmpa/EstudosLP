@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "questions": [
+    {
+      "external_id": "DUP-1", "source": "Exemplo", "type": "multiple_choice", "statement": "Registro válido, usado para demonstrar lote parcial e duplicidade.",
+      "alternatives": [{ "key": "A", "text": "Primeira", "explanation": "Correta" }, { "key": "B", "text": "Segunda", "explanation": "Incorreta" }],
+      "correct_answer": "A", "general_explanation": "Explicação."
+    },
+    {
+      "external_id": "DUP-1", "source": "Exemplo", "type": "multiple_choice", "statement": "Registro válido, usado para demonstrar lote parcial e duplicidade.",
+      "alternatives": [{ "key": "A", "text": "Primeira", "explanation": "Correta" }, { "key": "B", "text": "Segunda", "explanation": "Incorreta" }],
+      "correct_answer": "A", "general_explanation": "Duplicata exata de fonte + ID."
+    },
+    {
+      "external_id": "SEM-FONTE", "type": "multiple_choice", "statement": "Falta a fonte obrigatória.",
+      "alternatives": [{ "key": "A", "text": "Primeira", "explanation": "" }, { "key": "B", "text": "Segunda", "explanation": "" }],
+      "correct_answer": "A", "general_explanation": ""
+    },
+    {
+      "source": "Exemplo", "type": "multiple_choice", "statement": "Gabarito não corresponde a uma chave.",
+      "alternatives": [{ "key": "A", "text": "Primeira", "explanation": "" }, { "key": "B", "text": "Segunda", "explanation": "" }],
+      "correct_answer": "C", "general_explanation": ""
+    },
+    {
+      "source": "Exemplo", "type": "multiple_choice", "statement": "Alternativa repetida.",
+      "alternatives": [{ "key": "A", "text": "Primeira", "explanation": "" }, { "key": "A", "text": "Outra", "explanation": "" }],
+      "correct_answer": "A", "general_explanation": ""
+    },
+    {
+      "source": "Exemplo", "type": "true_false", "statement": "Certo/Errado com gabarito booleano incorreto para o contrato.",
+      "alternatives": [{ "key": "TRUE", "text": "Certo", "explanation": "" }, { "key": "FALSE", "text": "Errado", "explanation": "" }],
+      "correct_answer": true, "general_explanation": "Use a string TRUE ou FALSE."
+    },
+    {
+      "source": "Exemplo", "type": "multiple_choice", "statement": "<script>alert('sem texto visível')</script>",
+      "alternatives": [{ "key": "A", "text": "Primeira", "explanation": "" }, { "key": "B", "text": "Segunda", "explanation": "" }],
+      "correct_answer": "A", "general_explanation": ""
+    }
+  ]
+}
