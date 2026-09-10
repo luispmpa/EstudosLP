@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "questions": [
+    {
+      "external_id": "DEMO-001",
+      "source": "Material demonstrativo EstudosLP",
+      "type": "multiple_choice",
+      "statement": "<p>Qual alternativa descreve o <strong>princípio da publicidade</strong> na Administração Pública?</p>",
+      "alternatives": [
+        { "key": "A", "text": "Divulgação de informações públicas, observadas as hipóteses legais de sigilo.", "explanation": "A transparência permite o controle da atuação administrativa, respeitados os limites previstos em lei." },
+        { "key": "B", "text": "Sigilo absoluto de todos os atos administrativos.", "explanation": "O sigilo absoluto é incompatível com a publicidade como regra geral." },
+        { "key": "C", "text": "Promoção pessoal de agentes públicos em toda comunicação oficial.", "explanation": "A publicidade institucional deve respeitar também a impessoalidade." }
+      ],
+      "correct_answer": "A",
+      "general_explanation": "<p>Questão <em>demonstrativa</em>, criada para apresentar a plataforma.</p>",
+      "subject": "Direito Administrativo",
+      "topic": "Princípios da Administração",
+      "year": 2025,
+      "tags": ["demonstração", "princípios"],
+      "notes": "Use para testar a busca por transparência."
+    },
+    {
+      "external_id": "DEMO-002",
+      "source": "Material demonstrativo EstudosLP",
+      "type": "true_false",
+      "statement": "<p>Na plataforma, escolher um intervalo manual de dez minutos agenda a próxima revisão para dez minutos após a resposta.</p>",
+      "alternatives": [
+        { "key": "TRUE", "text": "Certo", "explanation": "O agendamento soma o intervalo escolhido à data/hora da resposta." },
+        { "key": "FALSE", "text": "Errado", "explanation": "O sistema não substitui o intervalo por uma decisão de algoritmo adaptativo." }
+      ],
+      "correct_answer": "TRUE",
+      "general_explanation": "<p>Intervalos manuais são determinísticos.</p>",
+      "subject": "Uso da plataforma",
+      "tags": ["demonstração", "revisão"]
+    },
+    {
+      "external_id": "DEMO-003",
+      "source": "Material demonstrativo EstudosLP",
+      "type": "multiple_choice",
+      "statement": "<p>Qual chave textual foi indicada como correta neste exemplo de duas alternativas?</p>",
+      "alternatives": [
+        { "key": "primeira", "text": "Primeira opção", "explanation": "A coleção aceita chaves textuais; a primeira foi marcada como correta." },
+        { "key": "segunda", "text": "Segunda opção", "explanation": "Esta chave não corresponde ao gabarito informado." }
+      ],
+      "correct_answer": "primeira",
+      "general_explanation": "O gabarito é sempre uma string exatamente igual à chave da alternativa."
+    }
+  ]
+}

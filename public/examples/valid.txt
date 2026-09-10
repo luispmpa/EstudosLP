@@ -1,0 +1,48 @@
+ID: TXT-001
+FONTE: Material demonstrativo EstudosLP
+TIPO: múltipla escolha
+MATÉRIA: Administração Pública
+ASSUNTO: Transparência
+ANO: 2025
+TAGS: demonstração; acentos
+
+ENUNCIADO:
+<p>Qual alternativa contém uma palavra com acento?</p>
+
+A:
+Administração
+
+B:
+Controle
+
+GABARITO:
+A
+
+EXPLICAÇÃO A:
+A palavra Administração contém acento gráfico.
+
+EXPLICAÇÃO B:
+A palavra Controle não possui acento gráfico.
+
+EXPLICAÇÃO GERAL:
+Exemplo destinado a validar o parser de texto estruturado.
+
+---
+
+ID: TXT-002
+FONTE: Material demonstrativo EstudosLP
+TIPO: certo ou errado
+
+ENUNCIADO:
+O campo de gabarito de Certo/Errado usa as strings canônicas TRUE ou FALSE.
+
+TRUE:
+Certo
+
+FALSE:
+Errado
+
+GABARITO: TRUE
+EXPLICAÇÃO TRUE: É o contrato desta versão.
+EXPLICAÇÃO FALSE: Não são aceitos booleanos ou letras C/E no gabarito.
+EXPLICAÇÃO GERAL: Os textos visíveis das alternativas podem ser Certo e Errado.
