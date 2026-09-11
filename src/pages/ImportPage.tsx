@@ -37,6 +37,8 @@ const fields = [
   "alternatives",
   "correct_answer",
   "general_explanation",
+  "visual_explanation_html",
+  "visual_explanation_height",
   "year",
   "level",
   "difficulty",

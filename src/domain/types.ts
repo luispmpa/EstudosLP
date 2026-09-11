@@ -30,6 +30,9 @@ export interface QuestionInput {
   alternatives: Alternative[];
   correct_answer: string;
   general_explanation: string;
+  /** Optional self-contained HTML/CSS rendered only on the answer side in a sandboxed frame. */
+  visual_explanation_html?: string;
+  visual_explanation_height?: number;
   year?: number | null;
   level?: string | null;
   difficulty?: string | null;

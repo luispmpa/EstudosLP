@@ -275,6 +275,30 @@ describe("real PostgreSQL ownership and integrity", () => {
     expect(q.statement).toContain("<strong>Questão</strong>");
     expect(q.statement).not.toContain("alert(1)");
   });
+  it("stores a self-contained visual answer, indexes its text, and rejects active markup", async () => {
+    const visual =
+      "<style>body{font-family:Arial}strong{color:#17365d}</style><section><strong>Superávit financeiro visual</strong><p>É a fonte para créditos adicionais.</p></section>";
+    const q = await save(
+      fixture({
+        external_id: "visual-001",
+        visual_explanation_html: visual,
+        visual_explanation_height: 640,
+      }),
+    );
+    expect(q.visual_explanation_html).toBe(visual);
+    expect(q.visual_explanation_height).toBe(640);
+    expect((await questions({ query: "superávit financeiro visual" })).total).toBe(
+      1,
+    );
+    await expect(
+      save(
+        fixture({
+          external_id: "visual-002",
+          visual_explanation_html: "<script>alert(1)</script>",
+        }),
+      ),
+    ).rejects.toThrow(/HTML visual/i);
+  });
   it("searches statement, alternatives and explanations with combined filters and real pagination", async () => {
     const subject = await catalog("subject", "AFO");
     await save(fixture({ catalog_ids: [subject.id], year: 2025 }));

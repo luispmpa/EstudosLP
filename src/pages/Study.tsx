@@ -20,6 +20,7 @@ import type {
   Question,
 } from "../domain/types";
 import { RichText, RichEditor } from "../components/RichEditor";
+import { VisualExplanation } from "../components/VisualExplanation";
 import {
   Empty,
   ErrorBox,
@@ -455,6 +456,10 @@ export function Study({
                 <RichText html={question.general_explanation} />
               </div>
             )}
+            <VisualExplanation
+              html={question.visual_explanation_html}
+              height={question.visual_explanation_height}
+            />
             <div className="explanation-list">
               {question.alternatives.map((a) => (
                 <div key={a.key} className="explanation-item">

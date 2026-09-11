@@ -1405,6 +1405,45 @@ tbody tr:last-child td {
 .general-explanation h3 {
   margin-bottom: 10px;
 }
+.visual-explanation {
+  margin: 24px 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+.visual-explanation-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 17px;
+  border-bottom: 1px solid var(--line);
+}
+.visual-explanation-heading h3 {
+  font-size: 14px;
+}
+.visual-explanation-heading p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.visual-explanation-heading > span,
+.visual-html-optional {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #e5f1e9;
+  padding: 4px 8px;
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+}
+.visual-explanation-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
 .explanation-list {
   border-top: 1px solid var(--line);
   padding-top: 10px;
@@ -2127,6 +2166,56 @@ label > span:not(.sr-only) {
 }
 .modal-title h2 {
   font-size: 17px;
+}
+.visual-html-editor > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  cursor: pointer;
+  list-style: none;
+}
+.visual-html-editor > summary::-webkit-details-marker {
+  display: none;
+}
+.visual-html-editor > summary strong,
+.visual-html-editor > summary small {
+  display: block;
+}
+.visual-html-editor > summary small {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.visual-html-note {
+  margin: 18px 0 !important;
+  line-height: 1.55;
+}
+.visual-html-input {
+  min-height: 250px;
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfa;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.visual-html-height {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+}
+.visual-html-height input {
+  width: 88px;
+  padding: 8px 10px;
 }
 .delete-confirmation {
   padding: 22px 23px;

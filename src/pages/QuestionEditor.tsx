@@ -8,6 +8,7 @@ import type {
 } from "../domain/types";
 import { api } from "../lib/api";
 import { RichEditor } from "../components/RichEditor";
+import { VisualExplanation } from "../components/VisualExplanation";
 import {
   ErrorBox,
   PageTitle,
@@ -50,6 +51,9 @@ export function QuestionEditor({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [visualOpen, setVisualOpen] = useState(
+    Boolean(question?.visual_explanation_html),
+  );
   const patch = (value: Partial<QuestionInput>) => {
     setForm((f) => ({ ...f, ...value }));
     setDirty(true);
@@ -253,6 +257,66 @@ export function QuestionEditor({
               value={form.notes ?? ""}
               onChange={(v) => patch({ notes: v })}
             />
+          </section>
+          <section className="panel form-section">
+            <details
+              className="visual-html-editor"
+              open={visualOpen}
+              onToggle={(event) => setVisualOpen(event.currentTarget.open)}
+            >
+              <summary>
+                <span>
+                  <strong>HTML visual do verso</strong>
+                  <small>
+                    Cole um layout completo de gabarito para aparecer após a
+                    resposta.
+                  </small>
+                </span>
+                <span className="visual-html-optional">Opcional</span>
+              </summary>
+              <p className="small muted visual-html-note">
+                Aceita HTML e CSS autocontidos. O material abre em uma moldura
+                isolada: scripts, imagens, formulários, incorporações e
+                recursos externos não são permitidos.
+              </p>
+              <label className="field-label" htmlFor="visual-explanation-html">
+                Código HTML do gabarito
+              </label>
+              <textarea
+                id="visual-explanation-html"
+                className="visual-html-input"
+                spellCheck={false}
+                value={form.visual_explanation_html ?? ""}
+                onChange={(e) =>
+                  patch({ visual_explanation_html: e.target.value })
+                }
+                placeholder={'<section style="...">…</section>'}
+              />
+              <label className="visual-html-height" htmlFor="visual-explanation-height">
+                Altura da visualização
+                <input
+                  id="visual-explanation-height"
+                  type="number"
+                  min="240"
+                  max="2000"
+                  step="10"
+                  value={form.visual_explanation_height ?? 720}
+                  onChange={(e) =>
+                    patch({
+                      visual_explanation_height: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
+                    })
+                  }
+                />
+                <span>px</span>
+              </label>
+              <VisualExplanation
+                html={form.visual_explanation_html}
+                height={form.visual_explanation_height}
+                title="Prévia do HTML visual"
+              />
+            </details>
           </section>
         </div>
         <aside className="editor-aside">

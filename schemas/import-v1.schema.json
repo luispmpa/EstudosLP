@@ -40,6 +40,15 @@
                 "type": "string",
                 "maxLength": 2000000
               },
+              "visual_explanation_html": {
+                "type": "string",
+                "maxLength": 200000
+              },
+              "visual_explanation_height": {
+                "type": "integer",
+                "minimum": 240,
+                "maximum": 2000
+              },
               "year": {
                 "anyOf": [
                   {
@@ -225,6 +234,15 @@
               "general_explanation": {
                 "type": "string",
                 "maxLength": 2000000
+              },
+              "visual_explanation_html": {
+                "type": "string",
+                "maxLength": 200000
+              },
+              "visual_explanation_height": {
+                "type": "integer",
+                "minimum": 240,
+                "maximum": 2000
               },
               "year": {
                 "anyOf": [
