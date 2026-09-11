@@ -12,12 +12,15 @@ export interface ImportPreviewRow {
 }
 
 const richText = z.string().max(2_000_000);
+const visualHtml = z.string().max(200_000);
 const optionalLabel = z.string().max(180).optional();
 const common = {
   external_id: z.string().min(1).max(160).nullable().optional(),
   source: z.string().min(1).max(160),
   statement: richText.min(1),
   general_explanation: richText,
+  visual_explanation_html: visualHtml.optional(),
+  visual_explanation_height: z.number().int().min(240).max(2000).optional(),
   year: z.number().int().min(1900).max(2200).nullable().optional(),
   level: z.string().max(100).nullable().optional(),
   difficulty: z.string().max(100).nullable().optional(),
@@ -135,6 +138,24 @@ export function validateQuestion(
   );
   if (!plainText(question.general_explanation))
     warnings.push("Sem explicação geral.");
+  if (question.visual_explanation_html !== undefined) {
+    if (
+      /<\s*\/?\s*(?:script|iframe|object|embed|base|link|meta|form|img)\b/i.test(
+        question.visual_explanation_html,
+      )
+    )
+      errors.push(
+        "visual_explanation_html: use HTML e CSS autocontidos; scripts, imagens, incorporações, formulários e recursos externos não são aceitos.",
+      );
+    if (/(?:@import|url\s*\()/i.test(question.visual_explanation_html))
+      errors.push(
+        "visual_explanation_html: CSS não pode carregar recursos externos.",
+      );
+    if (/\son[a-z]+\s*=/i.test(question.visual_explanation_html))
+      errors.push(
+        "visual_explanation_html: atributos de evento JavaScript não são aceitos.",
+      );
+  }
   if (question.notes !== undefined)
     question.notes = clean(question.notes, "notes");
   question.alternatives = question.alternatives.map((a, i) => ({
@@ -160,6 +181,10 @@ const aliases: Record<string, string> = {
   CORRECT_ANSWER: "correct_answer",
   EXPLICACAO_GERAL: "general_explanation",
   GENERAL_EXPLANATION: "general_explanation",
+  HTML_VISUAL_VERSO: "visual_explanation_html",
+  VISUAL_EXPLANATION_HTML: "visual_explanation_html",
+  ALTURA_HTML_VISUAL: "visual_explanation_height",
+  VISUAL_EXPLANATION_HEIGHT: "visual_explanation_height",
   BANCA: "board",
   BOARD: "board",
   ORGAO: "organization",
@@ -223,9 +248,12 @@ function objectFromFields(
   for (const [key, value] of Object.entries(fields)) {
     if (key.startsWith("alternative_") || key.startsWith("explanation_"))
       continue;
-    if (key === "year") {
+    if (key === "year" || key === "visual_explanation_height") {
       if (value.trim())
-        data[key] = /^\d{4}$/.test(value.trim()) ? Number(value) : value;
+        data[key] =
+          key === "year" && !/^\d{4}$/.test(value.trim())
+            ? value
+            : Number(value);
     } else if (["tags", "projects", "notebooks", "catalog_ids"].includes(key)) {
       if (value.trim().startsWith("[")) {
         try {
@@ -246,7 +274,12 @@ function objectFromFields(
       }
     } else if (
       value !== "" ||
-      ["statement", "general_explanation", "source"].includes(key)
+      [
+        "statement",
+        "general_explanation",
+        "visual_explanation_html",
+        "source",
+      ].includes(key)
     )
       data[key] = value.trim();
   }
@@ -484,9 +517,12 @@ function parseHtml(content: string): ImportPreviewRow[] {
       if (Object.prototype.hasOwnProperty.call(fields, key))
         errors.push(`Campo HTML repetido: ${key}.`);
       else
-        fields[key] = ["statement", "general_explanation", "notes"].includes(
-          key,
-        )
+        fields[key] = [
+          "statement",
+          "general_explanation",
+          "notes",
+          "visual_explanation_html",
+        ].includes(key)
           ? element.innerHTML
           : (element.textContent ?? "");
     });

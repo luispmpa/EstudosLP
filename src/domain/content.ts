@@ -122,6 +122,7 @@ export function searchableText(question: QuestionInput): string {
       plainText(alternative.explanation),
     ]),
     plainText(question.general_explanation),
+    plainText(question.visual_explanation_html ?? ""),
     plainText(question.notes ?? ""),
     question.board,
     question.organization,

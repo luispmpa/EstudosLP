@@ -240,6 +240,23 @@ describe("texto, CSV e HTML estruturados", () => {
       )[0].errors.join(),
     ).toContain("HTML estruturado");
   });
+  it("preserva o HTML visual estruturado para o verso e bloqueia conteúdo ativo", async () => {
+    const visual =
+      '<style>body{background:#fff}h1{color:#17365d}</style><section><h1>Gabarito visual</h1><p>Texto pesquisável.</p></section>';
+    const rows = await parseImport(
+      `<article data-question data-source="Manual" data-type="multiple_choice" data-correct-answer="A"><div data-field="statement">Enunciado</div><div data-alternative="A"><div data-field="text">Primeira</div></div><div data-alternative="B"><div data-field="text">Segunda</div></div><div data-field="general_explanation"></div><div data-field="visual_explanation_html">${visual}</div><div data-field="visual_explanation_height">640</div></article>`,
+      "html",
+    );
+    expect(rows[0].errors).toEqual([]);
+    expect(rows[0].question?.visual_explanation_html).toBe(visual);
+    expect(rows[0].question?.visual_explanation_height).toBe(640);
+    expect(
+      validateQuestion({
+        ...question,
+        visual_explanation_html: "<script>alert(1)</script>",
+      }).errors.join(),
+    ).toContain("autocontidos");
+  });
   it("detecta formatos e mantém vazio como erro legível", async () => {
     expect(detectImportFormat(payload(question))).toBe("json");
     expect(detectImportFormat("ID: 123\nFONTE: X")).toBe("text");

@@ -47,6 +47,10 @@ function safeQuestion(input: QuestionInput): QuestionInput {
     ...input,
     statement: sanitizeHtml(input.statement),
     general_explanation: sanitizeHtml(input.general_explanation ?? ""),
+    // This field intentionally stays intact: it is rendered in an iframe with an
+    // empty sandbox attribute, never as HTML in the application document.
+    visual_explanation_html: input.visual_explanation_html ?? "",
+    visual_explanation_height: input.visual_explanation_height ?? 720,
     notes: sanitizeHtml(input.notes ?? ""),
     alternatives: input.alternatives.map((a) => ({
       ...a,

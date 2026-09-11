@@ -13,6 +13,7 @@ import { QuestionsPage } from "../src/pages/Questions";
 import { api } from "../src/lib/api";
 import { questionDraft } from "../src/domain/editor";
 import { validateQuestion } from "../src/domain/import";
+import { VisualExplanation } from "../src/components/VisualExplanation";
 import type { Attempt, Policy, Question } from "../src/domain/types";
 
 vi.mock("../src/lib/api", () => ({
@@ -115,6 +116,20 @@ beforeEach(() => {
   vi.mocked(api.deleteQuestions).mockResolvedValue({ deleted: 1 });
 });
 afterEach(cleanup);
+
+it("renders visual answer HTML in a fully sandboxed frame", () => {
+  render(
+    <VisualExplanation
+      html="<style>h1{color:#17365d}</style><section><h1>Gabarito visual</h1></section>"
+      height={640}
+    />,
+  );
+  const frame = screen.getByTitle("Gabarito visual");
+  expect(frame.getAttribute("sandbox")).toBe("");
+  expect(frame.getAttribute("srcdoc")).toContain("Gabarito visual");
+  expect(frame.getAttribute("style")).toContain("height: 640px");
+});
+
 const study = () =>
   render(
     <Study
